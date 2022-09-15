@@ -1,0 +1,229 @@
+#!/usr/bin/python3
+
+# Author: Timotheus Pokorra <timotheus.pokorra@solidcharity.com>
+# source hosted at https://github.com/SolidCharity/exportMediaWiki2HTML
+# licensed under the MIT license
+# Copyright 2020-2021 Timotheus Pokorra
+
+from urllib import parse
+import requests
+import json
+import re
+from pathlib import Path
+import argparse
+import recettes_maker
+
+downloadedimages = []
+
+
+def request_pages():
+    url = "http://recettesdefamille.wiki/"
+    subpath = url[url.index("://") + 3:]
+    subpath = subpath[subpath.index("/")+1:]
+    numberOfPages = 'max'
+    pageOnly = -1
+    categoryOnly = 18 # Recettes
+
+    S = requests.Session()
+
+    # Retrieve login token first
+    PARAMS_0 = {
+      'action':"query",
+      'meta':"tokens",
+      'type':"login",
+      'format':"json"
+    }
+    R = S.get(url=url + "/api.php", params=PARAMS_0)
+    DATA = R.json()
+    LOGIN_TOKEN = DATA['query']['tokens']['logintoken']
+
+    # Main-account login via "action=login" is deprecated and may stop working without warning. To continue login with "action=login", see [[Special:BotPasswords]]
+    PARAMS_1 = {
+      'action':"login",
+      'lgname':'coucou :)',
+      'lgpassword':'ca va ????',
+      'lgtoken':LOGIN_TOKEN,
+      'format':"json"
+    }
+
+    R = S.post(url + "/api.php", data=PARAMS_1)
+    DATA = R.json()
+    if "error" in DATA:
+        print(DATA)
+        exit(-1)
+
+    if categoryOnly != -1:
+      params_all_pages = {
+        'action': 'query',
+        'list': 'categorymembers',
+        'format': 'json',
+        'cmpageid': categoryOnly,
+        'cmlimit': numberOfPages
+      }
+    else:
+      params_all_pages = {
+        'action': 'query',
+        'list': 'allpages',
+        'format': 'json',
+        'aplimit': numberOfPages
+      }
+
+    response = S.get(url + "api.php", params=params_all_pages)
+    data = response.json()
+
+    if "error" in data:
+      print(data)
+      if data['error']['code'] == "readapidenied":
+        print()
+        print("get login token here: " + url + "/api.php?action=query&meta=tokens&type=login")
+        print("and then call this script with parameters: myuser topsecret mytoken")
+        exit(-1)
+    if categoryOnly != -1:
+      pages = data['query']['categorymembers']
+    else:
+      pages = data['query']['allpages']
+
+    while 'continue' in data and (numberOfPages == 'max' or len(pages) < int(numberOfPages)):
+      if categoryOnly != -1:
+        params_all_pages['cmcontinue'] = data['continue']['cmcontinue']
+      else:
+        params_all_pages['apcontinue'] = data['continue']['apcontinue']
+
+      response = S.get(url + "api.php", params=params_all_pages)
+
+      data = response.json()
+
+      if "error" in data:
+        print(data)
+        if data['error']['code'] == "readapidenied":
+          print()
+          print(f'get login token here: {url}/api.php?action=query&meta=tokens&type=login')
+          print("and then call this script with parameters: myuser topsecret mytoken")
+          exit(-1)
+
+      if categoryOnly != -1:
+        pages.extend(data['query']['categorymembers'])
+      else:
+        pages.extend(data['query']['allpages'])
+
+    ##################
+
+    all_pages_content = []
+    for page in pages:
+        if (pageOnly > -1) and (page['pageid'] != pageOnly):
+            continue
+
+        quoted_pagename = quote_title(page['title'])
+        url_page = url + "index.php?title=" + quoted_pagename + "&action=render"
+        response = S.get(url_page)
+        content = response.text
+        url_title = url + "index.php?title="
+        if url_title not in content:
+            url_title = url_title.replace("http://", "https://")
+        pos = 0
+
+
+        while url_title in content:
+            pos = content.find(url_title)
+            posendquote = content.find('"', pos)
+            file_url = content[pos:posendquote]
+            linkedpage = file_url
+            linkedpage = linkedpage[linkedpage.find('=') + 1:]
+            linkedpage = linkedpage.replace('%27', '_')
+            if linkedpage.startswith('File:') or linkedpage.startswith('Image:'):
+              if linkedpage.startswith('File:'):
+                  linkType = "File"
+              elif linkedpage.startswith('Image:'):
+                  linkType = "Image"
+              origlinkedpage = linkedpage[linkedpage.find(':')+1:]
+              linkedpage = parse.unquote(origlinkedpage)
+
+              if linkType == "File":
+                  pass
+                # DownloadFile(linkedpage, file_url)
+
+              # images are only downloaded for "img src="
+              # we just replace the link here
+              content = content.replace(url_title+linkType+":"+origlinkedpage, "img/"+origlinkedpage)
+
+            elif "&amp;action=edit&amp;redlink=1" in linkedpage:
+              content = content[:pos] + "page_not_existing.html\" style='color:red'" + content[posendquote+1:]
+            elif "#" in linkedpage:
+              linkWithoutAnchor = linkedpage[0:linkedpage.find('#')]
+              linkWithoutAnchor = PageTitleToFilename(linkWithoutAnchor)
+              content = content[:pos] + linkWithoutAnchor + ".html#" + linkedpage[linkedpage.find('#')+1:] + content[posendquote:]
+            else:
+              linkedpage = PageTitleToFilename(parse.unquote(linkedpage))
+              content = content[:pos] + linkedpage + ".html" + content[posendquote:]
+
+        # replace all <a href="<url>/<subpath>/images"
+        imgpos = 0
+        while imgpos > -1:
+            imgpos = content.find('href="' + url + 'images/', imgpos)
+            if imgpos > -1:
+              imgendquote = content.find('"', imgpos + len('href="'))
+              imgpath = content[imgpos+len('href="'):imgendquote]
+              filename = imgpath[imgpath.rindex("/")+1:]
+              # DownloadImage(filename, imgpath, ignorethumb=False)
+              # content = content.replace(content[imgpos + len('href="'):imgendquote], "img/"+filename)
+              # content = content.replace(content[imgpos + len('href="'):imgendquote], "img/"+filename)
+
+
+        # replace all <img src="/<subpath>/images"
+        imgpos = 0
+        while imgpos > -1:
+            imgpos = content.find('src="/' + subpath + 'images/', imgpos)
+            if imgpos > -1:
+              imgendquote = content.find('"', imgpos + len('src="'))
+              imgpath = content[imgpos+len('src="') + len(subpath):imgendquote]
+              filename = imgpath[imgpath.rindex("/")+1:]
+              # DownloadImage(filename, imgpath, ignorethumb=False)
+              content = content.replace("/"+subpath+imgpath[1:], "img/"+filename)
+
+        content = re.sub("(<!--).*?(-->)", '', content, flags=re.DOTALL)
+
+        print(page['title'])
+        try :
+            recette = recettes_maker.parse_recette(page['title'], content)
+        except Exception as e:
+            print('PROBLÈME PENDANT LE TRAITEMENT DE {}'.format(page['title']))
+            raise
+        all_pages_content.append(recette)
+
+    return all_pages_content
+
+def quote_title(title):
+  return parse.quote(title.replace(' ', '_'))
+
+def DownloadImage(filename, urlimg, ignorethumb=True):
+  if not filename in downloadedimages:
+    if ignorethumb and '/thumb/' in urlimg:
+      urlimg = urlimg.replace('/thumb/', '/')
+      urlimg = urlimg[:urlimg.rindex('/')]
+    if not urlimg.startswith("http"):
+        urlimg = url + urlimg[1:]
+    print(f"Downloading {urlimg}")
+    response = S.get(urlimg)
+    if response.status_code == 404:
+      raise Exception("404: cannot download " + urlimg)
+    content = response.content
+    f = open("export/img/" + filename, "wb")
+    f.write(content)
+    f.close()
+    downloadedimages.append(filename)
+
+def DownloadFile(filename, urlfilepage):
+  if not filename in downloadedimages:
+    # get the file page
+    response = S.get(urlfilepage)
+    content = response.text
+    filepos = content.find('href="/' + subpath + 'images/')
+    if filepos == -1:
+      return
+    fileendquote = content.find('"', filepos + len('href="'))
+    urlfile = content[filepos+len('href="') + len(subpath):fileendquote]
+    DownloadImage(filename, urlfile)
+
+def PageTitleToFilename(title):
+    temp = re.sub('[^A-Za-z0-9\u0400-\u0500\u4E00-\u9FFF]+', '_', title);
+    return temp.replace("(","_").replace(")","_").replace("__", "_")

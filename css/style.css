@@ -1,0 +1,116 @@
+@media print {
+
+@page {
+  size: 220mm 297mm;
+  margin-top: 20mm;
+  margin-bottom: 10mm;
+  bleed:1mm;
+
+  font-size: 11pt;
+}
+
+@page:left {
+  margin-left: 10mm;
+  margin-right: 25mm;
+}
+
+@page:right {
+  margin-left: 25mm;
+  margin-right: 10mm;
+}
+
+
+article {
+    break-before: page;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+}
+
+aside {
+  font-weight: bold;
+  width: 50mm;
+  padding-top: 23mm;
+}
+
+main {
+  width: 125mm;
+}
+
+a {
+  text-decoration: none;
+  color: inherit !important;
+}
+h1 {
+  font-size: 27pt;
+  font-weight: normal;
+  margin-top: 0;
+}
+
+
+section.recette {
+  font-weight: bold;
+}
+
+li, p {
+  margin: 5pt 0;
+}
+
+
+ul, ol {
+  padding-left: 0;
+  margin: 0;
+}
+
+aside ul, aside ol {
+  list-style: none;
+}
+
+section.tags ul {
+  list-style: none;
+  display: flex;
+}
+
+section.recette,
+section.description {
+  border-top: 1pt solid;
+  border-bottom: 1pt solid;
+  padding: 10pt 0;
+  margin: 10pt 0;
+
+}
+
+section.description {
+  border-top: none;
+}
+
+section.ingredients {
+  margin-top: 10mm;
+}
+
+section.contexte,
+section.auteurs,
+section.astuces{
+  font-size: 9.5pt;
+}
+
+section.contexte,
+section.auteurs{
+  font-style: italic;
+}
+
+section.tags {
+  position: absolute;
+  left:0;
+  bottom: 0;
+  font-size: 8pt;
+}
+
+section.tags li {
+  margin:1mm;
+}
+
+.reference,
+.gallery {
+  display: none;
+}
