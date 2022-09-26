@@ -4,6 +4,7 @@ import copy
 def parse_recette(title, content):
     soup_in = BeautifulSoup(content, 'html.parser')
     remove_divs(soup_in)
+    remove_sups(soup_in)
     remove_tables(soup_in)
 
 
@@ -99,6 +100,10 @@ def remove_divs(soup):
     while(div):
         div.extract()
         div = soup.div.div
+
+def remove_sups(soup):
+    for sup in soup.find_all('sup') :
+        sup.extract()
 
 def remove_tables(soup):
     table = soup.div.table

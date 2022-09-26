@@ -8,7 +8,7 @@ def main():
         for page in request_pages():
             soup.body.append(page)
         f = open("index.html", "wb")
-        f.write(soup.prettify().encode('utf-8'))
+        f.write(soup.encode('utf-8'))
         f.close()
 
 if __name__ == '__main__':
