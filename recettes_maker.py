@@ -30,13 +30,36 @@ def parse_recette(title, content):
     main.append(get_auteurs(soup_in))
     main.append(get_contexte(soup_in))
     main.append(get_recette(soup_in))
-    main.append(get_astuces(soup_in))
+
+    astuces = get_astuces(soup_in)
+    if astuces.find("ul"):
+        section_accompagnement = get_accompagnement(soup_in)
+        if section_accompagnement.find('p'):
+            li_accompagnement = create_astuce_item_from_section(soup_in, "En accompagnement", section_accompagnement)
+            astuces.find("ul").insert(0, li_accompagnement)
+
+        section_ce_quon_boit = get_ce_quon_boit(soup_in)
+        if section_ce_quon_boit.find('p'):
+            li_ce_quon_boit = create_astuce_item_from_section(soup_in, "Ce qu'on boit avec ça", section_ce_quon_boit)
+            astuces.find("ul").append(li_ce_quon_boit)
+        main.append(astuces)
+
     main.append(get_tags(soup_in))
 
     add_top_comment(soup_out, title)
     return soup_out
     pass
 
+def create_astuce_item_from_section(soup, name, section):
+    content = section.find('p').get_text()
+    content = content[0].lower() + content[1:]
+    li = soup.new_tag('li')
+    em = soup.new_tag('em')
+    em.append(name)
+    li.append(em)
+    li.append(' : ')
+    li.append(content)
+    return li
 
 def get_infos(soup):
     return new_section(soup, 'Temps_de_préparation', 'infos')
@@ -44,13 +67,20 @@ def get_infos(soup):
 def get_ingredients(soup):
     return new_section(soup, 'Ingrédients', 'ingredients')
 
+# def get_content (soup, heading_id):
+#     try:
+#         heading = soup.find(id=heading_id).parent
+#     except AttributeError:
+#         print('OUPS pas de ' + heading_id)
+#         return section
+
 def new_section(soup, heading_id, cls):
     section = soup.new_tag('section', attrs={"class":cls})
 
     try:
         heading = soup.find(id=heading_id).parent
     except AttributeError:
-        print('                   OUPS pas de ' + heading_id)
+        print('OUPS pas de ' + heading_id)
         return section
 
     for sibling in heading.next_siblings:
@@ -63,6 +93,12 @@ def get_description(soup):
     section = soup.new_tag('section', attrs={"class":'description'})
     section.append(copy.copy(soup.p))
     return section
+
+def get_ce_quon_boit(soup):
+    return new_section(soup, "Ce_qu'on_boit_avec_ça", 'cequonboit')
+
+def get_accompagnement(soup):
+    return new_section(soup, 'En_accompagnement', 'accompagnement')
 
 def get_auteurs(soup):
     return new_section(soup, 'Auteurs', 'auteurs')
