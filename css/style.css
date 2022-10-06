@@ -1,3 +1,6 @@
+:root{
+  --bleed = 1;
+}
 @media print {
 
 @page {
@@ -12,28 +15,53 @@
 @page:left {
   margin-left: 10mm;
   margin-right: 25mm;
+  @bottom-left {
+    content: counter(page);
+    font-size: 8pt;
+
+  }
+
 }
 
 @page:right {
   margin-left: 25mm;
   margin-right: 10mm;
+  @bottom-right {
+    content: counter(page);
+    font-size: 8pt;
+
+  
+
 }
 
 
+
+article{
+  break-before: page;
+}
+/* 
 article {
-    break-before: page;
     display: flex;
     align-items: stretch;
     justify-content: space-between;
-}
+} */
 
 aside {
+  /* position: absolute;
+  left:0; */
+
+  float: left;
   font-weight: bold;
   width: 50mm;
   padding-top: 23mm;
 }
 
 main {
+  /* position: absolute;
+  right:0; */
+  height: 100%;
+  margin-left: 60mm;
+
   width: 125mm;
 }
 
@@ -62,6 +90,11 @@ ul, ol {
   margin: 0;
 }
 
+hr {
+  border:none;
+  border-bottom: 1pt solid;
+  margin: 10pt 0;
+}
 aside ul, aside ol {
   list-style: none;
 }
@@ -71,18 +104,6 @@ section.tags ul {
   display: flex;
 }
 
-section.recette,
-section.description {
-  border-top: 1pt solid;
-  border-bottom: 1pt solid;
-  padding: 10pt 0;
-  margin: 10pt 0;
-
-}
-
-section.description {
-  border-top: none;
-}
 
 section.ingredients {
   margin-top: 10mm;
@@ -113,3 +134,62 @@ section.tags li {
 .gallery {
   display: none;
 }
+
+
+.images.apres,
+.images.avant{
+  --pagedjs-full-page: page;
+  width: 100%;
+  height: var(--pagedjs-height);
+  display: flex;
+  flex-direction: column;
+}
+.images.apres img,
+.images.avant img{
+  object-fit: cover;
+  object-position: 0px 0px;
+  width: 100%;
+  height: 100%;
+}
+
+.images.dans{
+  width: 100%;
+  position: absolute;
+  bottom: -20mm;
+  left: -20mm;
+  z-index: -1;
+}
+
+/* 
+.images {
+  width : 100mm;
+  height : 100mm;
+  overflow: hidden;
+}
+
+.images.avant{
+  break-after: page;
+  border:2px solid green;
+}
+
+
+.images.apres{
+  border:2px solid pink;
+  break-after: page;
+  break-before: page;
+
+  margin: 0;
+  width: calc(var(--pagedjs-pagebox-width) + --bleed);
+  height: calc(var(--pagedjs-pagebox-height) + --bleed*2);
+  position: absolute;
+  top: calc((var(--pagedjs-margin-top) + --bleed)*-1);
+  left: calc(var(--pagedjs-margin-left)*-1);
+  overflow: hidden;
+
+
+}
+
+
+.images.dans{
+  border:2px solid cyan;
+} */

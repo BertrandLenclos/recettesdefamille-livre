@@ -11,18 +11,17 @@ import json
 import re
 from pathlib import Path
 import argparse
-import recettes_maker
 
 downloadedimages = []
 
 
-def request_pages():
+def request_pages(page=-1, category=-1):
     url = "http://recettesdefamille.wiki/"
     subpath = url[url.index("://") + 3:]
     subpath = subpath[subpath.index("/")+1:]
     numberOfPages = 'max'
-    pageOnly = -1
-    categoryOnly = 18 # Recettes
+    pageOnly = page
+    categoryOnly = category # Recettes = 18
 
     S = requests.Session()
 
@@ -108,122 +107,23 @@ def request_pages():
 
     ##################
 
-    all_pages_content = []
+    all_pages = []
     for page in pages:
         if (pageOnly > -1) and (page['pageid'] != pageOnly):
             continue
 
-        quoted_pagename = quote_title(page['title'])
+        quoted_pagename = parse.quote(page['title'].replace(' ', '_'))
         url_page = url + "index.php?title=" + quoted_pagename + "&action=render"
+        print('-> récupération de ' + quoted_pagename)
         response = S.get(url_page)
+
         content = response.text
-        url_title = url + "index.php?title="
-        if url_title not in content:
-            url_title = url_title.replace("http://", "https://")
-        pos = 0
-
-
-        while url_title in content:
-            pos = content.find(url_title)
-            posendquote = content.find('"', pos)
-            file_url = content[pos:posendquote]
-            linkedpage = file_url
-            linkedpage = linkedpage[linkedpage.find('=') + 1:]
-            linkedpage = linkedpage.replace('%27', '_')
-            if linkedpage.startswith('File:') or linkedpage.startswith('Image:'):
-              if linkedpage.startswith('File:'):
-                  linkType = "File"
-              elif linkedpage.startswith('Image:'):
-                  linkType = "Image"
-              origlinkedpage = linkedpage[linkedpage.find(':')+1:]
-              linkedpage = parse.unquote(origlinkedpage)
-
-              if linkType == "File":
-                  pass
-                # DownloadFile(linkedpage, file_url)
-
-              # images are only downloaded for "img src="
-              # we just replace the link here
-              content = content.replace(url_title+linkType+":"+origlinkedpage, "img/"+origlinkedpage)
-
-            elif "&amp;action=edit&amp;redlink=1" in linkedpage:
-              content = content[:pos] + "page_not_existing.html\" style='color:red'" + content[posendquote+1:]
-            elif "#" in linkedpage:
-              linkWithoutAnchor = linkedpage[0:linkedpage.find('#')]
-              linkWithoutAnchor = PageTitleToFilename(linkWithoutAnchor)
-              content = content[:pos] + linkWithoutAnchor + ".html#" + linkedpage[linkedpage.find('#')+1:] + content[posendquote:]
-            else:
-              linkedpage = PageTitleToFilename(parse.unquote(linkedpage))
-              content = content[:pos] + linkedpage + ".html" + content[posendquote:]
-
-        # replace all <a href="<url>/<subpath>/images"
-        imgpos = 0
-        while imgpos > -1:
-            imgpos = content.find('href="' + url + 'images/', imgpos)
-            if imgpos > -1:
-              imgendquote = content.find('"', imgpos + len('href="'))
-              imgpath = content[imgpos+len('href="'):imgendquote]
-              filename = imgpath[imgpath.rindex("/")+1:]
-              # DownloadImage(filename, imgpath, ignorethumb=False)
-              # content = content.replace(content[imgpos + len('href="'):imgendquote], "img/"+filename)
-              # content = content.replace(content[imgpos + len('href="'):imgendquote], "img/"+filename)
-
-
-        # replace all <img src="/<subpath>/images"
-        imgpos = 0
-        while imgpos > -1:
-            imgpos = content.find('src="/' + subpath + 'images/', imgpos)
-            if imgpos > -1:
-              imgendquote = content.find('"', imgpos + len('src="'))
-              imgpath = content[imgpos+len('src="') + len(subpath):imgendquote]
-              filename = imgpath[imgpath.rindex("/")+1:]
-              # DownloadImage(filename, imgpath, ignorethumb=False)
-              content = content.replace("/"+subpath+imgpath[1:], "img/"+filename)
 
         content = re.sub("(<!--).*?(-->)", '', content, flags=re.DOTALL)
 
-        print(page['title'])
-        try :
-            recette = recettes_maker.parse_recette(page['title'], content)
-        except Exception as e:
-            print('PROBLÈME PENDANT LE TRAITEMENT DE {}'.format(page['title']))
-            raise
-        all_pages_content.append(recette)
+        all_pages.append({
+          'title':page['title'],
+          'content':content
+        })
 
-    return all_pages_content
-
-def quote_title(title):
-  return parse.quote(title.replace(' ', '_'))
-
-def DownloadImage(filename, urlimg, ignorethumb=True):
-  if not filename in downloadedimages:
-    if ignorethumb and '/thumb/' in urlimg:
-      urlimg = urlimg.replace('/thumb/', '/')
-      urlimg = urlimg[:urlimg.rindex('/')]
-    if not urlimg.startswith("http"):
-        urlimg = url + urlimg[1:]
-    print(f"Downloading {urlimg}")
-    response = S.get(urlimg)
-    if response.status_code == 404:
-      raise Exception("404: cannot download " + urlimg)
-    content = response.content
-    f = open("export/img/" + filename, "wb")
-    f.write(content)
-    f.close()
-    downloadedimages.append(filename)
-
-def DownloadFile(filename, urlfilepage):
-  if not filename in downloadedimages:
-    # get the file page
-    response = S.get(urlfilepage)
-    content = response.text
-    filepos = content.find('href="/' + subpath + 'images/')
-    if filepos == -1:
-      return
-    fileendquote = content.find('"', filepos + len('href="'))
-    urlfile = content[filepos+len('href="') + len(subpath):fileendquote]
-    DownloadImage(filename, urlfile)
-
-def PageTitleToFilename(title):
-    temp = re.sub('[^A-Za-z0-9\u0400-\u0500\u4E00-\u9FFF]+', '_', title);
-    return temp.replace("(","_").replace(")","_").replace("__", "_")
+    return all_pages

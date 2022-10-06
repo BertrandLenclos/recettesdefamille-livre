@@ -1,8 +1,23 @@
 from bs4 import BeautifulSoup, Comment
 import copy
 
+def parse_page(title, content):
+    soup_in = BeautifulSoup(content, 'html.parser')
+    remove_divs(soup_in)
+    remove_sups(soup_in)
+    remove_tables(soup_in)
+
+    article = soup_in.new_tag('article')
+    article.append(soup_in.div)
+
+    return article
+
+
 def parse_recette(title, content):
     soup_in = BeautifulSoup(content, 'html.parser')
+
+    images = get_images(soup_in)
+
     remove_divs(soup_in)
     remove_sups(soup_in)
     remove_tables(soup_in)
@@ -10,13 +25,10 @@ def parse_recette(title, content):
 
     soup_out = BeautifulSoup()
 
+
     article = soup_out.new_tag('article')
     main = soup_out.new_tag('main')
     aside = soup_out.new_tag('aside')
-
-    soup_out.append(article)
-    article.append(aside)
-    article.append(main)
 
 
     # - INFOS = pour n personnes + temps…
@@ -27,9 +39,13 @@ def parse_recette(title, content):
 
     main.append(get_title(soup_in, title))
     main.append(get_description(soup_in))
+    main.append(soup_out.new_tag('hr'))
+
     main.append(get_auteurs(soup_in))
     main.append(get_contexte(soup_in))
+    main.append(soup_out.new_tag('hr'))
     main.append(get_recette(soup_in))
+    main.append(soup_out.new_tag('hr'))
 
     astuces = get_astuces(soup_in)
     if astuces.find("ul"):
@@ -47,15 +63,42 @@ def parse_recette(title, content):
     main.append(get_tags(soup_in))
 
     add_top_comment(soup_out, title)
+    article.append(aside)
+    article.append(main)
+
+    if images and images.attrs['data-position'] == 'avant':
+        soup_out.append(create_images(soup_in, images))
+
+    # article_container = soup_out.new_tag('div', attrs={'class':'article-container'})
+    # article_container.append(article)
+    soup_out.append(article)
+
+    if images and images.attrs['data-position'] == 'dans':
+        article.append(create_images(soup_in, images))
+
+    if images and images.attrs['data-position'] == 'apres':
+        soup_out.append(create_images(soup_in, images))
+
+
+
     return soup_out
-    pass
+    
+def create_images(soup, images):
+    position = images.attrs['data-position']
+    div = soup.new_tag('div', attrs={"class":'images '+position})
+    image1 = images.attrs['data-image1']
+    image2 = images.attrs['data-image2']
+    if image1 : div.append(soup.new_tag('img', attrs={'src':image1}))
+    if image2 : div.append(soup.new_tag('img', attrs={'src':image2}))
+    return div
+
 
 def create_astuce_item_from_section(soup, name, section):
     content = section.find('p').get_text()
     content = content[0].lower() + content[1:]
     li = soup.new_tag('li')
     em = soup.new_tag('em')
-    em.append(name)
+    em.append(content)
     li.append(em)
     li.append(' : ')
     li.append(content)
@@ -67,12 +110,8 @@ def get_infos(soup):
 def get_ingredients(soup):
     return new_section(soup, 'Ingrédients', 'ingredients')
 
-# def get_content (soup, heading_id):
-#     try:
-#         heading = soup.find(id=heading_id).parent
-#     except AttributeError:
-#         print('OUPS pas de ' + heading_id)
-#         return section
+def get_images (soup):
+    return soup.find(id='imagedulivre')
 
 def new_section(soup, heading_id, cls):
     section = soup.new_tag('section', attrs={"class":cls})
@@ -80,7 +119,7 @@ def new_section(soup, heading_id, cls):
     try:
         heading = soup.find(id=heading_id).parent
     except AttributeError:
-        print('OUPS pas de ' + heading_id)
+        # print('---> pas de ' + heading_id)
         return section
 
     for sibling in heading.next_siblings:
