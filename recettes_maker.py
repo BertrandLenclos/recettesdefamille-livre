@@ -98,7 +98,7 @@ def create_astuce_item_from_section(soup, name, section):
     content = content[0].lower() + content[1:]
     li = soup.new_tag('li')
     em = soup.new_tag('em')
-    em.append(content)
+    em.append(name)
     li.append(em)
     li.append(' : ')
     li.append(content)
