@@ -1,6 +1,9 @@
 :root{
-  --bleed = 1;
+  --bleed:1;
 }
+
+
+
 @media print {
 
 @page {
@@ -26,10 +29,11 @@
 @page:right {
   margin-left: 25mm;
   margin-right: 10mm;
+
   @bottom-right {
     content: counter(page);
     font-size: 8pt;
-
+  }
   
 
 }
@@ -39,16 +43,9 @@
 article{
   break-before: page;
 }
-/* 
-article {
-    display: flex;
-    align-items: stretch;
-    justify-content: space-between;
-} */
+
 
 aside {
-  /* position: absolute;
-  left:0; */
 
   float: left;
   font-weight: bold;
@@ -57,8 +54,6 @@ aside {
 }
 
 main {
-  /* position: absolute;
-  right:0; */
   height: 100%;
   margin-left: 60mm;
 
@@ -160,36 +155,4 @@ section.tags li {
   z-index: -1;
 }
 
-/* 
-.images {
-  width : 100mm;
-  height : 100mm;
-  overflow: hidden;
 }
-
-.images.avant{
-  break-after: page;
-  border:2px solid green;
-}
-
-
-.images.apres{
-  border:2px solid pink;
-  break-after: page;
-  break-before: page;
-
-  margin: 0;
-  width: calc(var(--pagedjs-pagebox-width) + --bleed);
-  height: calc(var(--pagedjs-pagebox-height) + --bleed*2);
-  position: absolute;
-  top: calc((var(--pagedjs-margin-top) + --bleed)*-1);
-  left: calc(var(--pagedjs-margin-left)*-1);
-  overflow: hidden;
-
-
-}
-
-
-.images.dans{
-  border:2px solid cyan;
-} */
