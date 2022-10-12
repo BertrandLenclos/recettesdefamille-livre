@@ -18,9 +18,9 @@ def main():
             print('integration dans le sommaire de la partie ' + item)
             if item == 'recettes':
                 recettes_sommaire = []
+                print('integration des recettes dans l\'index')
                 for page in recettes:
                     recettes_sommaire.append({'title':page['title'], 'pageid':page['title']})
-                    print('integration des recettes dans l\'index')
                     page['categories'] = request_familles_de_recettes(page['title'])
                     for category in page['categories']:
                         if not category in categories_index :
@@ -35,14 +35,11 @@ def main():
                 page = request_pages(page=int(item))[0]
                 sommaire.append({'title':page['title'], 'pageid':page['title']})
 
-        print(sommaire)
-        print(categories_index)
-
         # creation pages 
         for item in index:
             print('creation de la partie ' + item)
             if item == 'recettes':
-                for page in request_pages(category=18):
+                for page in recettes:
                     recette = recettes_maker.parse_recette(page['title'], page['content'], page['categories'])
                     soup.body.append(recette)
             elif item == 'sommaire':
@@ -64,15 +61,13 @@ def placeholder(content):
     article.append(content)
     return article
 
-    return article
-
 
 def get_index():
     index_page = request_pages(page=901)[0]['content']
     soup = BeautifulSoup(index_page, 'html.parser')
     items = soup.find_all('li')
     def clean_item(item) : return item.get_text().split('#')[0].strip()
-    return map(clean_item, items)
+    return list(map(clean_item, items))
 
 
 if __name__ == '__main__':
