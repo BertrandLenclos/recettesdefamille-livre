@@ -20,7 +20,6 @@ def main():
                 recettes_sommaire = []
                 for page in recettes:
                     recettes_sommaire.append({'title':page['title'], 'pageid':page['title']})
-                    print('integration des recettes dans l\'index')
                     page['categories'] = request_familles_de_recettes(page['title'])
                     for category in page['categories']:
                         if not category in categories_index :
@@ -42,7 +41,7 @@ def main():
         for item in index:
             print('creation de la partie ' + item)
             if item == 'recettes':
-                for page in request_pages(category=18):
+                for page in recettes:
                     recette = recettes_maker.parse_recette(page['title'], page['content'], page['categories'])
                     soup.body.append(recette)
             elif item == 'sommaire':
