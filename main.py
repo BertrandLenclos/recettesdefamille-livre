@@ -34,9 +34,6 @@ def main():
                 page = request_pages(page=int(item))[0]
                 sommaire.append({'title':page['title'], 'pageid':page['title']})
 
-        print(sommaire)
-        print(categories_index)
-
         # creation pages 
         for item in index:
             print('creation de la partie ' + item)
