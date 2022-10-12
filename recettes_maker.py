@@ -13,7 +13,7 @@ def parse_page(title, content):
     return article
 
 
-def parse_recette(title, content):
+def parse_recette(title, content, categories):
     soup_in = BeautifulSoup(content, 'html.parser')
 
     images = get_images(soup_in)
@@ -60,7 +60,7 @@ def parse_recette(title, content):
             astuces.find("ul").append(li_ce_quon_boit)
         main.append(astuces)
 
-    main.append(get_tags(soup_in))
+    main.append(get_tags(soup_in, categories))
 
     add_top_comment(soup_out, title)
     article.append(aside)
@@ -151,11 +151,11 @@ def get_recette(soup):
 def get_astuces(soup):
     return new_section(soup, 'Astuces', 'astuces')
 
-def get_tags(soup):
+def get_tags(soup, categories):
     section = soup.new_tag('section', attrs={"class":'tags'})
     ul = soup.new_tag('ul')
     section.append(ul)
-    for content in ['Tags', 'autre tag', 'coucou']:
+    for content in categories:
         tag = soup.new_tag('li', attrs={"class":'tag'})
         tag.append(content)
         ul.append(tag)

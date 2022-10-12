@@ -7,6 +7,8 @@
 @media print {
 
 @page {
+  font-family: "Liberation Serif", monospace;
+
   size: 220mm 297mm;
   margin-top: 20mm;
   margin-bottom: 10mm;

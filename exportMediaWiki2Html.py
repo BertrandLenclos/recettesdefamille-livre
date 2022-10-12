@@ -15,6 +15,36 @@ import argparse
 downloadedimages = []
 
 
+def request_categories(title):
+  S = requests.Session()
+
+  URL = "http://recettesdefamille.wiki/api.php"
+
+  PARAMS = {
+      "action": "query",
+      "format": "json",
+      "prop": "categories",
+      "titles": title
+  }
+
+  R = S.get(url=URL, params=PARAMS)
+  data = R.json()
+  
+  pages = data['query']['pages']
+  page = pages.popitem()[1]
+  if not 'categories' in page: return []
+
+  return list(map(lambda c: c['title'], page['categories']))
+
+def request_familles_de_recettes(title):
+  print('-> récupération des catégories pour ' + title)
+
+  CAT = 'Catégorie:Famille de recette'
+  categories = request_categories(title)
+  categories = filter(lambda c: CAT in request_categories(c), categories)
+  categories = map(lambda c: c.split(':')[1], categories)
+  return list(categories)
+
 def request_pages(page=-1, category=-1):
     url = "http://recettesdefamille.wiki/"
     subpath = url[url.index("://") + 3:]
@@ -114,7 +144,7 @@ def request_pages(page=-1, category=-1):
 
         quoted_pagename = parse.quote(page['title'].replace(' ', '_'))
         url_page = url + "index.php?title=" + quoted_pagename + "&action=render"
-        print('-> récupération de ' + quoted_pagename)
+        print('-> récupération de ' + page['title'])
         response = S.get(url_page)
 
         content = response.text
@@ -122,6 +152,7 @@ def request_pages(page=-1, category=-1):
         content = re.sub("(<!--).*?(-->)", '', content, flags=re.DOTALL)
 
         all_pages.append({
+          'pageid':page['pageid'],
           'title':page['title'],
           'content':content
         })
