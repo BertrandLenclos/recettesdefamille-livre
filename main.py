@@ -1,45 +1,85 @@
 from exportMediaWiki2Html import request_pages, request_familles_de_recettes
 from bs4 import BeautifulSoup
 import recettes_maker
+import json
+import unicodedata
 
-def main():
-    print('creation du livre...')
+def strip_accents(s):
+   return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn').lower()
+
+def get_data():
+    print('\nRÉCUPÉRATION DES DONNÉES SUR LE NET\n')
+    print('Récupération de l\'index du livre...')
+    index = get_index()
+
+    print('Récupération des recettes...')
+    recettes = sorted(request_pages(category=18), key=lambda r: strip_accents(r['title']))
+    
+    print('Récupération des pages spéciales...')
+    special_pages = {id:request_pages(page=int(id))[0] for id in filter(lambda s: s.isdigit(), index)}
+
+    print('Récupération des catégories...')
+    for page in recettes:
+        page['categories'] = request_familles_de_recettes(page['title'])
+
+    print('Création du sommaire...')
+    sommaire = []
+    for item in index:
+        print('-> Ajout dans le sommaire de ' + item)
+        if item == 'recettes':
+            recettes_sommaire = []
+            print(f'-> Ajout dans le sommaire des {len(recettes)} recettes')
+            for page in recettes:
+                recettes_sommaire.append({'title':page['title'], 'pageid':page['title']})
+            sommaire.append({'title':"Les recettes", 'content':recettes_sommaire})
+        elif item == 'sommaire':
+            sommaire.append({'title':"Sommaire", 'pageid':"Sommaire"})
+        elif item == 'index':
+            sommaire.append({'title':"Index", 'pageid':"Index"})
+        else:
+            page = special_pages[item]
+            sommaire.append({'title':page['title'], 'pageid':page['title']})
+
+    print('Création de l\'index par catégories...')
+    categories_index = {}
+    for page in recettes:
+        for category in page['categories']:
+            if not category in categories_index :
+                categories_index[category] = []
+            categories_index[category].append(page['title'])
+
+    data = {
+        'index':index,
+        'recettes':recettes,
+        'special_pages':special_pages,
+        'sommaire':sommaire,
+        'categories_index':categories_index,
+    }
+
+    return data
+
+def store_data_json(data):
+    print('\nMISES EN CACHE DES DONNÉES\n')
+    print('-> Écriture recettes.json...')
+    with open('recettes.json', 'w') as fi:
+        json.dump(data, fi)
+
+def get_data_json():
+    print('\nLECTURE DES DONNÉES MISES EN CACHE\n')
+    print('-> Lecture de recettes.json...')
+    with open('recettes.json', 'r') as fi:
+        return json.load(fi)
+
+def create_book(data):
+    print('\nCRÉATION DU LIVRE\n')
     with open('template.html') as template:
         content = template.read()
         soup = BeautifulSoup(content, 'html.parser')
-
-        index = get_index()
-        recettes = request_pages(category=18)
-
-        # creation sommaire et index
-        categories_index = {}
-        sommaire = []
-        for item in index:
-            print('integration dans le sommaire de la partie ' + item)
+        for item in data['index']:
+            print('-> Creation de ' + item)
             if item == 'recettes':
-                recettes_sommaire = []
-                print('integration des recettes dans l\'index')
-                for page in recettes:
-                    recettes_sommaire.append({'title':page['title'], 'pageid':page['title']})
-                    page['categories'] = request_familles_de_recettes(page['title'])
-                    for category in page['categories']:
-                        if not category in categories_index :
-                            categories_index[category] = []
-                        categories_index[category].append(page['title'])
-                sommaire.append({'title':"Les recettes", 'content':recettes_sommaire})
-            elif item == 'sommaire':
-                sommaire.append({'title':"Sommaire", 'pageid':"Sommaire"})
-            elif item == 'index':
-                sommaire.append({'title':"Index", 'pageid':"Index"})
-            else:
-                page = request_pages(page=int(item))[0]
-                sommaire.append({'title':page['title'], 'pageid':page['title']})
-
-        # creation pages 
-        for item in index:
-            print('creation de la partie ' + item)
-            if item == 'recettes':
-                for page in recettes:
+                for page in data['recettes']:
+                    print('-> Creation de', page['title'])
                     recette = recettes_maker.parse_recette(page['title'], page['content'], page['categories'])
                     soup.body.append(recette)
             elif item == 'sommaire':
@@ -47,13 +87,23 @@ def main():
             elif item == 'index':
                 soup.body.append(placeholder('ici il y aura l\'index par categories'))
             else:
-                page = request_pages(page=int(item))[0]
+                page = data['special_pages'][item]
                 soup.body.append(recettes_maker.parse_page(page['title'], page['content']))
-
 
         f = open("index.html", "wb")
         f.write(soup.encode('utf-8'))
         f.close()
+
+
+def main(cache=False):
+    data = {}
+    if cache:
+        data = get_data_json()
+    else:
+        data = get_data()
+        store_data_json(data)
+    create_book(data)
+
 
 def placeholder(content):
     soup = BeautifulSoup()
@@ -71,4 +121,8 @@ def get_index():
 
 
 if __name__ == '__main__':
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description='Création du livre recettes de famille.')
+    parser.add_argument('--cache', action='store_true', help='Get data from cache')
+    args = parser.parse_args()
+    main(cache=args.cache)
