@@ -48,17 +48,20 @@ def parse_recette(title, content, categories):
     main.append(soup_out.new_tag('hr'))
 
     astuces = get_astuces(soup_in)
-    if astuces.find("ul"):
-        section_accompagnement = get_accompagnement(soup_in)
-        if section_accompagnement.find('p'):
-            li_accompagnement = create_astuce_item_from_section(soup_in, "En accompagnement", section_accompagnement)
-            astuces.find("ul").insert(0, li_accompagnement)
+    section_accompagnement = get_accompagnement(soup_in)
+    if section_accompagnement.find('p'):
+        li_accompagnement = create_astuce_item_from_section(soup_in, "En accompagnement", section_accompagnement)
+        if not astuces.find("ul"):
+            astuces.append(soup_in.new_tag('ul'))
+        astuces.find("ul").insert(0, li_accompagnement)
 
-        section_ce_quon_boit = get_ce_quon_boit(soup_in)
-        if section_ce_quon_boit.find('p'):
-            li_ce_quon_boit = create_astuce_item_from_section(soup_in, "Ce qu'on boit avec ça", section_ce_quon_boit)
-            astuces.find("ul").append(li_ce_quon_boit)
-        main.append(astuces)
+    section_ce_quon_boit = get_ce_quon_boit(soup_in)
+    if section_ce_quon_boit.find('p'):
+        li_ce_quon_boit = create_astuce_item_from_section(soup_in, "Ce qu'on boit avec ça", section_ce_quon_boit)
+        if not astuces.find("ul"):
+            astuces.append(soup_in.new_tag('ul'))
+        astuces.find("ul").append(li_ce_quon_boit)
+    main.append(astuces)
 
     main.append(get_tags(soup_in, categories))
 
