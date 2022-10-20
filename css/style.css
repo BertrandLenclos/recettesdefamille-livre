@@ -9,7 +9,7 @@
 @page {
   font-family: "Liberation Serif", monospace;
 
-  size: 220mm 297mm;
+  size: 210mm 297mm;
   margin-top: 20mm;
   margin-bottom: 10mm;
   bleed:1mm;
@@ -36,7 +36,7 @@
     content: counter(page);
     font-size: 8pt;
   }
-  
+
 
 }
 
@@ -51,15 +51,15 @@ aside {
 
   float: left;
   font-weight: bold;
-  width: 50mm;
-  padding-top: 23mm;
+  width: 45mm;
+  padding-top: 17.5mm;
 }
 
 main {
   height: 100%;
-  margin-left: 60mm;
+  margin-left: 55mm;
 
-  width: 125mm;
+  width: 120mm;
 }
 
 a {
