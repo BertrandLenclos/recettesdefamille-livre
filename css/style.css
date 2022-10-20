@@ -158,3 +158,46 @@ section.tags li {
 }
 
 }
+
+
+
+#Page_de_garde {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+
+#Page_de_garde h1{
+  display: none;
+}
+
+#Auteurs{
+  column-count: 2;
+}
+
+
+#Sommaire,
+#Index
+{
+  column-count: 2;
+}
+
+#Sommaire ul,
+#Index ul
+{
+  list-style: none;
+}
+#Sommaire ul ul,
+#Index ul ul
+{
+  margin-left:3mm;
+}
+
+#Sommaire h2,
+#Index h2
+{
+  margin: 0;
+}

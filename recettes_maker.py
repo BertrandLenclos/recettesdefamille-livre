@@ -6,10 +6,68 @@ def parse_page(title, content):
     remove_divs(soup_in)
     remove_sups(soup_in)
     remove_tables(soup_in)
+    h1 = soup_in.new_tag('h1')
+    h1.append(title)
+
 
     article = soup_in.new_tag('article')
+    article.append(h1)
     article.append(soup_in.div)
+    article['id'] = title.replace(' ', '_')
 
+    return article
+
+
+def parse_index(index):
+    title='Index'
+    soup = BeautifulSoup()
+    article = soup.new_tag('article')
+    article['id'] = title.replace(' ', '_')
+
+    h1 = soup.new_tag('h1')
+    ul = soup.new_tag('ul')
+    article.append(h1)
+    article.append(ul)
+    h1.append(title)
+    for category, recettes in index.items():
+        li = soup.new_tag('li')
+        h2 = soup.new_tag('h2')
+        h2.append(category)
+        ul2 = soup.new_tag('ul')
+        for title in recettes:
+            li2 = soup.new_tag('li')
+            li2.append(title)
+            ul2.append(li2)
+        li.append(h2)
+        li.append(ul2)
+        ul.append(li)
+    return article
+
+
+def parse_sommaire(sommaire):
+    title = 'Sommaire'
+    soup = BeautifulSoup()
+    article = soup.new_tag('article')
+    article['id'] = title.replace(' ', '_')
+
+    h1 = soup.new_tag('h1')
+    ul = soup.new_tag('ul')
+    article.append(h1)
+    article.append(ul)
+    h1.append(title)
+    for item in sommaire:
+        li = soup.new_tag('li')
+        h2 = soup.new_tag('h2')
+        h2.append(item['title'])
+        li.append(h2)
+        if 'content' in item:
+            ul2 = soup.new_tag('ul')
+            for recette in item['content']:
+                li2 = soup.new_tag('li')
+                li2.append(recette['title'])
+                ul2.append(li2)
+            li.append(ul2)
+        ul.append(li)
     return article
 
 

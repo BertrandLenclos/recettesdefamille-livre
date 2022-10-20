@@ -83,9 +83,10 @@ def create_book(data):
                     recette = recettes_maker.parse_recette(page['title'], page['content'], page['categories'])
                     soup.body.append(recette)
             elif item == 'sommaire':
-                soup.body.append(placeholder('ici il y aura le sommaire'))
+                soup.body.append(recettes_maker.parse_sommaire(data['sommaire']))
             elif item == 'index':
-                soup.body.append(placeholder('ici il y aura l\'index par categories'))
+                soup.body.append(recettes_maker.parse_index(data['categories_index']))
+                # soup.body.append(placeholder('ici il y aura l\'index par categories'))
             else:
                 page = data['special_pages'][item]
                 soup.body.append(recettes_maker.parse_page(page['title'], page['content']))
