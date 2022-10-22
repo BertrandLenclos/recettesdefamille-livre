@@ -17,15 +17,34 @@
   font-size: 11pt;
 }
 
+
+
+.tags {
+  string-set: tags content(text);
+  display: none;
+  
+}
+
 @page:left {
   margin-left: 10mm;
   margin-right: 25mm;
+
   @bottom-left {
+    width:10mm;
     content: counter(page);
     font-size: 8pt;
 
   }
+}
 
+
+@page{
+  @bottom-right {
+    align-items: flex-start;
+  }
+  @bottom-left {
+    align-items: flex-start;
+  }
 }
 
 @page:right {
@@ -34,11 +53,29 @@
 
   @bottom-right {
     content: counter(page);
+    width:10mm;
+    font-size: 8pt;
+
+  }
+}
+
+
+@page recette:right {
+  @bottom-left {
+    width:auto;
+    content: string(tags);
     font-size: 8pt;
   }
-
-
 }
+
+@page recette:left {
+  @bottom-right {
+    width:auto;
+    content: string(tags);
+    font-size: 8pt;
+  }
+}
+
 
 
 
@@ -52,7 +89,8 @@ aside {
   float: left;
   font-weight: bold;
   width: 45mm;
-  padding-top: 17.5mm;
+  padding-top: 15.5mm;
+  font-size: 9pt;
 }
 
 main {
@@ -73,8 +111,17 @@ h1 {
 }
 
 
+section.description {
+ font-weight: bold;
+ font-size: 9pt;
+}
+
+article.recette {
+  page: recette;
+}
+
 section.recette {
-  font-weight: bold;
+  font-weight: normal;
 }
 
 li, p {
@@ -87,29 +134,41 @@ ul, ol {
   margin: 0;
 }
 
+ol li::marker {
+  font-size: 9pt;
+}
+
+ul li::marker {
+  content: '⚬ ';
+}
+
 hr {
   border:none;
-  border-bottom: 1pt solid;
+  border-bottom: 0.5pt solid;
   margin: 10pt 0;
 }
 aside ul, aside ol {
   list-style: none;
 }
 
-section.tags ul {
-  list-style: none;
-  display: flex;
+aside ul li::marker{
+  content: none;
 }
+
+
 
 
 section.ingredients {
-  margin-top: 10mm;
+  margin-top: 7mm;
 }
 
+section.ingredients ul {
+  margin-bottom : 7mm;
+}
 section.contexte,
 section.auteurs,
 section.astuces{
-  font-size: 9.5pt;
+  font-size: 9pt;
 }
 
 section.contexte,
@@ -117,16 +176,6 @@ section.auteurs{
   font-style: italic;
 }
 
-section.tags {
-  position: absolute;
-  left:0;
-  bottom: 0;
-  font-size: 8pt;
-}
-
-section.tags li {
-  margin:1mm;
-}
 
 .gallery {
   display: none;
@@ -160,8 +209,13 @@ section.tags li {
 }
 
 
+#Page_légale {
+  page: page_legale;
+  break-before: left;
+}
 
 #Page_de_garde {
+  page: page_de_garde;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -169,30 +223,112 @@ section.tags li {
   height: 100%;
 }
 
+@page page_de_garde {
+  @bottom-left {
+    content: none;
+  }
+  @bottom-right {
+    content: none;
+  }
+}
+
+@page page_legale {
+  @bottom-left {
+    content: none;
+  }
+  @bottom-right {
+    content: none;
+  }
+}
+
+@page:blank {
+  @bottom-left {
+    content: none;
+  }
+  @bottom-right {
+    content: none;
+  }
+}
+
 
 #Page_de_garde h1{
+  /* display: none; */
+  font-variant: all-petite-caps;
+  font-weight: bold;
+  font-size: 42pt;
+}
+
+#Page_de_garde>h1,
+#Page_légale h1{
   display: none;
 }
 
-#Auteurs{
-  column-count: 2;
+#Page_légale{
+  font-size: 9pt;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
 }
+#Avant-propos, #Auteurs{
+  break-before: right;
+  text-align: justify;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  padding: 20mm;
+}
+
+
+#Avant-propos p:last-child {
+  text-align: right;
+}
+
+#Auteurs ul {
+  list-style: none;
+}
+
+#Auteurs li {
+  display: inline;
+}
+
+#Auteurs li:after{
+  content: ', '
+}
+
+#Auteurs li:last-child::after{
+  content: '.';
+}
+
 
 
 #Sommaire,
 #Index
 {
   column-count: 2;
+  column-gap: 10mm;
 }
 
-#Sommaire ul,
-#Index ul
+#Sommaire>ul,
+#Index>ul
 {
   list-style: none;
+  margin-right:5mm;
+
 }
+
+#Sommaire>ul li::marker,
+#Index>ul li::marker{
+  content: none;
+}
+
+
 #Sommaire ul ul,
 #Index ul ul
 {
+  list-style: none;
   margin-left:3mm;
 }
 
@@ -200,4 +336,36 @@ section.tags li {
 #Index h2
 {
   margin: 0;
+}
+
+#Index h2 {
+  margin-top: 7mm;
+}
+
+.pagelink[href$="#Page_de_garde"],
+.pagelink[href$="#Page_légale"]{
+  display:none;
+}
+
+.pagelink::after
+{
+  margin-right: -5mm;
+  content: target-counter(attr(href), page);
+  float:right;
+}
+
+#Bibliographie a::after {
+    content: "→ " attr(href);
+    font-size: 8pt;
+    display: block;
+}
+
+
+
+.references {
+  display: none;
+}
+
+h4 {
+  margin-bottom: 0;
 }

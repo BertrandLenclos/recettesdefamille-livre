@@ -1,6 +1,12 @@
 from bs4 import BeautifulSoup, Comment
 import copy
 
+def new_article(title):
+    soup = BeautifulSoup()
+    article = soup.new_tag('article')
+    article['id'] = title.replace(' ', '_')
+    return article
+
 def parse_page(title, content):
     soup_in = BeautifulSoup(content, 'html.parser')
     remove_divs(soup_in)
@@ -10,19 +16,26 @@ def parse_page(title, content):
     h1.append(title)
 
 
-    article = soup_in.new_tag('article')
+    article = new_article(title)
     article.append(h1)
     article.append(soup_in.div)
-    article['id'] = title.replace(' ', '_')
 
     return article
+
+
+def new_page_link(title):
+    soup = BeautifulSoup()
+    a = soup.new_tag('a')
+    a['href'] = '#' + title.replace(' ', '_')
+    a['class'] = 'pagelink'
+    a.append(title)
+    return a
 
 
 def parse_index(index):
     title='Index'
     soup = BeautifulSoup()
-    article = soup.new_tag('article')
-    article['id'] = title.replace(' ', '_')
+    article = new_article(title)
 
     h1 = soup.new_tag('h1')
     ul = soup.new_tag('ul')
@@ -36,7 +49,7 @@ def parse_index(index):
         ul2 = soup.new_tag('ul')
         for title in recettes:
             li2 = soup.new_tag('li')
-            li2.append(title)
+            li2.append(new_page_link(title))
             ul2.append(li2)
         li.append(h2)
         li.append(ul2)
@@ -47,8 +60,7 @@ def parse_index(index):
 def parse_sommaire(sommaire):
     title = 'Sommaire'
     soup = BeautifulSoup()
-    article = soup.new_tag('article')
-    article['id'] = title.replace(' ', '_')
+    article = new_article(title)
 
     h1 = soup.new_tag('h1')
     ul = soup.new_tag('ul')
@@ -58,13 +70,15 @@ def parse_sommaire(sommaire):
     for item in sommaire:
         li = soup.new_tag('li')
         h2 = soup.new_tag('h2')
-        h2.append(item['title'])
+
+        h2_content = item['title'] if 'content' in item else new_page_link(item['title'])
+        h2.append(h2_content)
         li.append(h2)
         if 'content' in item:
             ul2 = soup.new_tag('ul')
             for recette in item['content']:
                 li2 = soup.new_tag('li')
-                li2.append(recette['title'])
+                li2.append(new_page_link(recette['title']))
                 ul2.append(li2)
             li.append(ul2)
         ul.append(li)
@@ -84,7 +98,8 @@ def parse_recette(title, content, categories):
     soup_out = BeautifulSoup()
 
 
-    article = soup_out.new_tag('article')
+    article = new_article(title)
+    article['class']='recette'
     main = soup_out.new_tag('main')
     aside = soup_out.new_tag('aside')
 
@@ -95,6 +110,7 @@ def parse_recette(title, content, categories):
     aside.append(get_infos(soup_in))
     aside.append(get_ingredients(soup_in))
 
+    main.append(get_tags(soup_in, categories))
     main.append(get_title(soup_in, title))
     main.append(get_description(soup_in))
     main.append(soup_out.new_tag('hr'))
@@ -103,7 +119,6 @@ def parse_recette(title, content, categories):
     main.append(get_contexte(soup_in))
     main.append(soup_out.new_tag('hr'))
     main.append(get_recette(soup_in))
-    main.append(soup_out.new_tag('hr'))
 
     astuces = get_astuces(soup_in)
     section_accompagnement = get_accompagnement(soup_in)
@@ -119,9 +134,11 @@ def parse_recette(title, content, categories):
         if not astuces.find("ul"):
             astuces.append(soup_in.new_tag('ul'))
         astuces.find("ul").append(li_ce_quon_boit)
-    main.append(astuces)
 
-    main.append(get_tags(soup_in, categories))
+    if astuces.find("ul"):
+        main.append(soup_out.new_tag('hr'))
+        main.append(astuces)
+
 
     add_top_comment(soup_out, title)
     article.append(aside)
@@ -214,12 +231,13 @@ def get_astuces(soup):
 
 def get_tags(soup, categories):
     section = soup.new_tag('section', attrs={"class":'tags'})
-    ul = soup.new_tag('ul')
-    section.append(ul)
-    for content in categories:
-        tag = soup.new_tag('li', attrs={"class":'tag'})
-        tag.append(content)
-        ul.append(tag)
+    div = soup.new_tag('div')
+    div.append(' – '.join(categories))
+    section.append(div)
+    # for content in categories:
+    #     tag = soup.new_tag('li', attrs={"class":'tag'})
+    #     tag.append(content)
+    #     div.append(content)
     return section
 
 def get_title(soup, txt):

@@ -31,7 +31,7 @@ def get_data():
             print(f'-> Ajout dans le sommaire des {len(recettes)} recettes')
             for page in recettes:
                 recettes_sommaire.append({'title':page['title'], 'pageid':page['title']})
-            sommaire.append({'title':"Les recettes", 'content':recettes_sommaire})
+            sommaire.append({'title':"Recettes", 'content':recettes_sommaire})
         elif item == 'sommaire':
             sommaire.append({'title':"Sommaire", 'pageid':"Sommaire"})
         elif item == 'index':
