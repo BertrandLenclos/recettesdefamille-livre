@@ -181,32 +181,65 @@ section.auteurs{
   display: none;
 }
 
+.images.avant{
+  /* --pagedjs-full-page: page; */
+}
+
+.images.apres{
+  /* --pagedjs-full-page: page; */
+}
+
+.images.avant{
+  left: -11mm;
+
+}
+
+.images.apres{
+  right: -11mm;
+
+}
 
 .images.apres,
 .images.avant{
-  --pagedjs-full-page: page;
-  width: 100%;
-  height: var(--pagedjs-height);
+  page-break-before: page;
+  min-height: var(--pagedjs-height);
+  min-width: var(--pagedjs-width);
+  max-height: var(--pagedjs-height);
+  max-width: var(--pagedjs-width);
   display: flex;
   flex-direction: column;
+  position: absolute;
+  justify-content: space-between;
+  top: -21mm;
+  /* right: 1mm; */
+  /* border: 0; */
 }
+
 .images.apres img,
 .images.avant img{
+  width: var(--pagedjs-width);
+
   object-fit: cover;
   object-position: 0px 0px;
   width: 100%;
   height: 100%;
 }
 
-.images.dans{
+.images.dans,
+.images.petit{
   width: 100%;
-  position: absolute;
-  bottom: -20mm;
-  left: -20mm;
+  margin-top: 10mm;
   z-index: -1;
 }
 
+
+.images.dans img,
+.images.petit img{
+
+  width: 100%;
 }
+
+
 
 
 #Page_légale {
@@ -368,4 +401,6 @@ section.auteurs{
 
 h4 {
   margin-bottom: 0;
+}
+
 }

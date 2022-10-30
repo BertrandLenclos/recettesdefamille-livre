@@ -144,18 +144,24 @@ def parse_recette(title, content, categories):
     article.append(aside)
     article.append(main)
 
-    if images and images.attrs['data-position'] == 'avant':
-        soup_out.append(create_images(soup_in, images))
 
-    # article_container = soup_out.new_tag('div', attrs={'class':'article-container'})
-    # article_container.append(article)
+    for image in images:
+        if image and image.attrs['data-position'] == 'avant':
+            soup_out.append(create_images(soup_in, image))
+
     soup_out.append(article)
 
-    if images and images.attrs['data-position'] == 'dans':
-        article.append(create_images(soup_in, images))
 
-    if images and images.attrs['data-position'] == 'apres':
-        soup_out.append(create_images(soup_in, images))
+    for image in images:
+        if image and image.attrs['data-position'] == 'dans':
+            article.append(create_images(soup_in, image))
+
+        elif image and image.attrs['data-position'] == 'petit':
+            main.append(create_images(soup_in, image))
+
+        elif image and image.attrs['data-position'] == 'apres':
+            soup_out.append(create_images(soup_in, image))
+            
 
 
 
@@ -189,7 +195,7 @@ def get_ingredients(soup):
     return new_section(soup, 'Ingrédients', 'ingredients')
 
 def get_images (soup):
-    return soup.find(id='imagedulivre')
+    return soup.find_all(attrs={'class':'imagedulivre'})
 
 def new_section(soup, heading_id, cls):
     section = soup.new_tag('section', attrs={"class":cls})
