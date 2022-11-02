@@ -12,7 +12,7 @@
   size: 210mm 297mm;
   margin-top: 20mm;
   margin-bottom: 10mm;
-  bleed:1mm;
+  bleed:5mm;
 
   font-size: 11pt;
 }
@@ -190,12 +190,12 @@ section.auteurs{
 }
 
 .images.avant{
-  left: -11mm;
+  left: -15mm;
 
 }
 
 .images.apres{
-  right: -11mm;
+  right: -15mm;
 
 }
 
@@ -203,17 +203,22 @@ section.auteurs{
 .images.avant{
   page-break-before: page;
   min-height: var(--pagedjs-height);
-  min-width: var(--pagedjs-width);
+  min-width: calc(var(--pagedjs-width) - 5mm);
   max-height: var(--pagedjs-height);
-  max-width: var(--pagedjs-width);
+  max-width: calc(var(--pagedjs-width) - 5mm);
   display: flex;
   flex-direction: column;
   position: absolute;
-  justify-content: space-between;
-  top: -21mm;
-  /* right: 1mm; */
-  /* border: 0; */
+  justify-content: center;
+  top: -25mm;
 }
+
+.images.apres:has(img:nth-child(2)),
+.images.avant:has(img:nth-child(2)){
+  justify-content: space-between;
+
+}
+
 
 .images.apres img,
 .images.avant img{
