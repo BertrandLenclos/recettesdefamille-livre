@@ -309,8 +309,11 @@ section.auteurs{
   justify-content: flex-end;
   height: 100%;
 }
-#Avant-propos, #Auteurs{
+#Avant-propos{
   break-before: right;
+}
+
+#Avant-propos, #Auteurs{
   text-align: justify;
   display: flex;
   flex-direction: column;

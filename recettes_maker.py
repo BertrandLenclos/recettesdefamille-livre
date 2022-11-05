@@ -9,18 +9,41 @@ def new_article(title):
 
 def parse_page(title, content):
     soup_in = BeautifulSoup(content, 'html.parser')
+    soup_out = BeautifulSoup()
+
+    images = get_images(soup_in)
+
     remove_divs(soup_in)
     remove_sups(soup_in)
     remove_tables(soup_in)
     h1 = soup_in.new_tag('h1')
     h1.append(title)
 
-
     article = new_article(title)
     article.append(h1)
     article.append(soup_in.div)
 
-    return article
+    print(title, images)
+    
+    for image in images:
+        if image and image.attrs['data-position'] == 'avant':
+            soup_out.append(create_images(soup_in, image))
+
+    soup_out.append(article)
+
+
+    for image in images:
+        if image and image.attrs['data-position'] == 'dans':
+            article.append(create_images(soup_in, image))
+
+        elif image and image.attrs['data-position'] == 'petit':
+            main.append(create_images(soup_in, image))
+
+        elif image and image.attrs['data-position'] == 'apres':
+            soup_out.append(create_images(soup_in, image))
+
+
+    return soup_out
 
 
 def new_page_link(title):
