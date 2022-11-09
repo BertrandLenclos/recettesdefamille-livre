@@ -10,7 +10,7 @@
   font-family: "Liberation Serif", monospace;
 
   size: 210mm 297mm;
-  margin-top: 20mm;
+  margin-top: 19mm;
   margin-bottom: 10mm;
   bleed:5mm;
 
@@ -22,7 +22,7 @@
 .tags {
   string-set: tags content(text);
   display: none;
-  
+
 }
 
 @page:left {
