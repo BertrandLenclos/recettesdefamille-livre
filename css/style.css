@@ -10,9 +10,9 @@
   font-family: "Liberation Serif", monospace;
 
   size: 210mm 297mm;
-  margin-top: 19mm;
+  margin-top: 20mm;
   margin-bottom: 10mm;
-  bleed:5mm;
+  bleed:3mm;
 
   font-size: 11pt;
 }
@@ -33,7 +33,6 @@
     width:10mm;
     content: counter(page);
     font-size: 8pt;
-
   }
 }
 
@@ -190,27 +189,25 @@ section.auteurs{
 }
 
 .images.avant{
-  left: -15mm;
+  left: -13mm;
 
 }
 
 .images.apres{
-  right: -15mm;
+  right: -13mm;
 
 }
 
 .images.apres,
 .images.avant{
   page-break-before: page;
-  min-height: var(--pagedjs-height);
-  min-width: calc(var(--pagedjs-width) - 5mm);
-  max-height: var(--pagedjs-height);
-  max-width: calc(var(--pagedjs-width) - 5mm);
+  height: var(--pagedjs-height);
+  width: calc(var(--pagedjs-width) - 3mm);
   display: flex;
   flex-direction: column;
   position: absolute;
   justify-content: center;
-  top: -25mm;
+  top: -23mm;
 }
 
 .images.apres:has(img:nth-child(2)),
