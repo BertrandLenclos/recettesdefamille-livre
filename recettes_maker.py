@@ -114,6 +114,7 @@ def parse_recette(title, content, categories):
     images = get_images(soup_in)
 
     remove_divs(soup_in)
+    remove_empty_p(soup_in)
     remove_sups(soup_in)
     remove_tables(soup_in)
 
@@ -277,6 +278,13 @@ def get_title(soup, txt):
 def add_top_comment(soup, txt):
     comment = Comment(txt.center(70, '-'))
     soup.insert(0, comment)
+
+
+
+def remove_empty_p(soup):
+    for p in soup.find_all('p'):
+        if len(p.text)<=2:
+            p.extract()
 
 def remove_divs(soup):
     div = soup.div.div

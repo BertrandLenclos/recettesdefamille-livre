@@ -11,7 +11,7 @@
 
   size: 210mm 297mm;
   margin-top: 19mm;
-  margin-bottom: 9mm;
+  margin-bottom: 10mm;
   bleed:5mm;
 
   font-size: 11pt;
@@ -411,4 +411,14 @@ h4 {
   margin-bottom: 0;
 }
 
+
+.astuces li, .recette li {
+  page-break-inside: avoid;
 }
+
+hr:last-child, hr:first-child{
+  display: none;
+}
+
+}
+
