@@ -198,8 +198,18 @@ section.auteurs{
 
 }
 
+@page image{
+  @bottom-left {
+    content: none;
+  }
+  @bottom-right {
+    content: none;
+  }
+}
+
 .images.apres,
 .images.avant{
+  page:image;
   page-break-before: page;
   height: var(--pagedjs-height);
   width: calc(var(--pagedjs-width) - 3mm);
@@ -308,10 +318,12 @@ section.auteurs{
 }
 #Avant-propos{
   break-before: right;
+  text-align: justify;
+
 }
 
+
 #Avant-propos, #Auteurs{
-  text-align: justify;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -342,11 +354,34 @@ section.auteurs{
 
 
 
+@page sommaire:left {
+  margin-left: 20mm;
+  margin-right: 35mm;
+
+}
+@page sommaire:right {
+  margin-left: 35mm;
+  margin-right: 20mm;
+}
+@page sommaire {
+  margin-top: 30mm;
+  margin-bottom: 20mm;
+  @bottom-left {
+    content: none;
+  }
+  @bottom-right {
+    content: none;
+  }
+
+}
+
 #Sommaire,
 #Index
 {
+  page: sommaire;
+
   column-count: 2;
-  column-gap: 10mm;
+  column-gap: 8mm;
 }
 
 #Sommaire>ul,
@@ -376,6 +411,13 @@ section.auteurs{
   margin: 0;
 }
 
+#Sommaire li,
+#Index li
+{
+  margin: 6pt 0;
+  font-size: 9pt;
+}
+
 #Index h2 {
   margin-top: 7mm;
 }
@@ -398,6 +440,11 @@ section.auteurs{
     display: block;
 }
 
+#Des_noms_sur_des_visages li {
+  margin-top:12pt;
+  margin-bottom: 0;
+}
+
 
 
 .references {
@@ -418,4 +465,3 @@ hr:last-child, hr:first-child{
 }
 
 }
-
