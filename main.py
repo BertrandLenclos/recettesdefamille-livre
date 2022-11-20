@@ -11,6 +11,7 @@ def get_data():
     print('\nRÉCUPÉRATION DES DONNÉES SUR LE NET\n')
     print('Récupération de l\'index du livre...')
     index = get_index()
+    categories_index = get_index_categories()
 
     print('Récupération des recettes...')
     recettes = sorted(request_pages(category=18), key=lambda r: strip_accents(r['title']))
@@ -41,12 +42,11 @@ def get_data():
             sommaire.append({'title':page['title'], 'pageid':page['title']})
 
     print('Création de l\'index par catégories...')
-    categories_index = {}
     for page in recettes:
         for category in page['categories']:
-            if not category in categories_index :
-                categories_index[category] = []
-            categories_index[category].append(page['title'])
+            for cat in categories_index:
+                if cat['name'] == category:
+                    cat['recettes'].append(page['title'])
 
     data = {
         'index':index,
@@ -118,6 +118,13 @@ def get_index():
     soup = BeautifulSoup(index_page, 'html.parser')
     items = soup.find_all('li')
     def clean_item(item) : return item.get_text().split('#')[0].strip()
+    return list(map(clean_item, items))
+
+def get_index_categories():
+    index_page = request_pages(page=1166)[0]['content']
+    soup = BeautifulSoup(index_page, 'html.parser')
+    items = soup.find_all('li')
+    def clean_item(item) : return {'name':item.get_text().strip(), 'recettes':[]}
     return list(map(clean_item, items))
 
 

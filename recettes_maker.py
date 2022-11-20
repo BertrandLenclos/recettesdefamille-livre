@@ -65,7 +65,9 @@ def parse_index(index):
     article.append(h1)
     article.append(ul)
     h1.append(title)
-    for category, recettes in index.items():
+    for cat in index:
+        category = cat['name']
+        recettes = cat['recettes']
         li = soup.new_tag('li')
         h2 = soup.new_tag('h2')
         h2.append(category)
